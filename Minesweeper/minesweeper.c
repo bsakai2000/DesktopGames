@@ -1,13 +1,7 @@
 #include <gtk/gtk.h>
 
-// Same but for the CSS file
-extern char _binary_minesweeper_css_min_start[];
-extern char _binary_minesweeper_css_min_end[];
-
-// Symbols exported by the linker so we can package the UI file with the
-// executable
-extern char _binary_minesweeper_ui_min_start[];
-extern char _binary_minesweeper_ui_min_end[];
+// Prefix for GResource files
+#define GRESOURCE_PREFIX "/com/example/DesktopGames/Minesweeper/"
 
 static void print_hello (GtkWidget *widget, gpointer data)
 {
@@ -19,10 +13,9 @@ static void print_hello (GtkWidget *widget, gpointer data)
  */
 void load_css()
 {
-	// Load CSS styling from packaged data
-	size_t css_size = _binary_minesweeper_css_min_end - _binary_minesweeper_css_min_start;
+	// Load CSS styling from packaged GResource data
 	GtkCssProvider* css = gtk_css_provider_new();
-	gtk_css_provider_load_from_data(css, _binary_minesweeper_css_min_start, css_size, NULL);
+	gtk_css_provider_load_from_resource(css, GRESOURCE_PREFIX "minesweeper.css");
 
 	// Apply CSS styling to our window
 	// I don't really understand this code or the Display/Screen model, but
@@ -39,13 +32,10 @@ void load_css()
 
 int main (int argc, char *argv[])
 {
-	GObject *main_grid;
-
 	gtk_init (&argc, &argv);
 
 	// Load UI definition from packaged data
-	size_t ui_size = _binary_minesweeper_ui_min_end - _binary_minesweeper_ui_min_start;
-	GtkBuilder* builder = gtk_builder_new_from_string(_binary_minesweeper_ui_min_start, ui_size);
+	GtkBuilder* builder = gtk_builder_new_from_resource(GRESOURCE_PREFIX "minesweeper.ui");
 
 	// Load and apply CSS
 	load_css();
