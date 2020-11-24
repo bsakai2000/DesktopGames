@@ -5,6 +5,7 @@
 }
 
 button {
+	background-size: 100% 100%;
 	border-style: outset;
 	border-color: darkgray;
 	border-width: 5px;
@@ -18,9 +19,12 @@ button:active {
 
 button.smile {
 	background-image: url("/com/example/DesktopGames/Minesweeper/images/smile.png");
-	background-size: 100% 100%;
 	min-height: 30px;
 	min-width: 30px;
+}
+
+button.flagged {
+	background-image: url("/com/example/DesktopGames/Minesweeper/images/flag.png");
 }
 
 label.display {

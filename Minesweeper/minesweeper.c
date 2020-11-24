@@ -3,10 +3,32 @@
 
 // Prefix for GResource files
 #define GRESOURCE_PREFIX "/com/example/DesktopGames/Minesweeper/"
+#define MOUSE_PRIMARY 1
+#define MOUSE_SECONDARY 3
 
 gboolean print_location(GtkWidget* widget, GdkEvent* event, gpointer user_data)
 {
-	printf("%s - LEFT: %d, TOP: %d\n", ((GdkEventButton*) event)->button==1?"Primary":"Secondary", ((int*)user_data)[0], ((int*)user_data)[1]);
+	GtkStyleContext* context = gtk_widget_get_style_context(widget);	// No unref
+	switch(((GdkEventButton*) event)->button)
+	{
+		case MOUSE_PRIMARY:
+			if(gtk_style_context_has_class(context, "flagged"))
+			{
+				return 1;
+			}
+
+			break;
+		case MOUSE_SECONDARY:
+			if(gtk_style_context_has_class(context, "flagged"))
+			{
+				gtk_style_context_remove_class(context, "flagged");
+			}
+			else
+			{
+				gtk_style_context_add_class(context, "flagged");
+			}
+			break;
+	}
 	return 0;
 }
 
@@ -48,7 +70,7 @@ int main (int argc, char *argv[])
 		for(int j = 0; j < height; ++j)
 		{
 			// Create new button
-			GtkButton* new_button = GTK_BUTTON(gtk_button_new());
+			GtkButton* new_button = GTK_BUTTON(gtk_button_new());	// No unref
 			gtk_widget_set_visible(GTK_WIDGET(new_button), true);
 			gtk_widget_set_hexpand(GTK_WIDGET(new_button), true);
 			gtk_widget_set_vexpand(GTK_WIDGET(new_button), true);
