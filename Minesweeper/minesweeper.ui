@@ -1,0 +1,123 @@
+<interface>
+	<object id="window" class="GtkWindow">
+		<property name="visible">True</property>
+		<property name="title">Grid</property>
+		<property name="border-width">10</property>
+		<child>
+			<object id="main_grid" class="GtkBox">
+				<property name="visible">True</property>
+				<property name="orientation">GTK_ORIENTATION_VERTICAL</property>
+				<child>
+					<object id="top_bar" class="GtkBox">
+						<property name="visible">True</property>
+						<property name="orientation">GTK_ORIENTATION_HORIZONTAL</property>
+						<property name="halign">GTK_ALIGN_FILL</property>
+						<property name="hexpand">True</property>
+						<child>
+							<object id="bombs" class="GtkButton">
+								<property name="visible">True</property>
+								<property name="label">bombs</property>
+								<property name="relief">GTK_RELIEF_NONE</property>
+								<property name="halign">GTK_ALIGN_START</property>
+							</object>
+						</child>
+						<child>
+							<object class="GtkSeparator">
+								<property name="visible">True</property>
+								<property name="hexpand">True</property>
+								<property name="opacity">0</property>
+							</object>
+						</child>
+						<child>
+							<object id="smile" class="GtkButton">
+								<property name="visible">True</property>
+								<property name="label">smile</property>
+								<property name="relief">GTK_RELIEF_NONE</property>
+								<property name="halign">GTK_ALIGN_FILL</property>
+							</object>
+						</child>
+						<child>
+							<object class="GtkSeparator">
+								<property name="visible">True</property>
+								<property name="hexpand">True</property>
+								<property name="opacity">0</property>
+							</object>
+						</child>
+						<child>
+							<object id="timer" class="GtkButton">
+								<property name="visible">True</property>
+								<property name="label">time</property>
+								<property name="relief">GTK_RELIEF_NONE</property>
+								<property name="halign">GTK_ALIGN_END</property>
+							</object>
+						</child>
+					</object>
+					<packing>
+						<property name="position">0</property>
+					</packing>
+				</child>
+				<child>
+					<object id="grid" class="GtkGrid">
+						<property name="visible">True</property>
+						<child>
+							<object id="button00" class="GtkButton">
+								<property name="visible">True</property>
+								<property name="label">Button 1</property>
+								<property name="hexpand">True</property>
+								<property name="vexpand">True</property>
+								<property name="relief">GTK_RELIEF_NONE</property>
+							</object>
+							<packing>
+								<property name="left-attach">0</property>
+								<property name="top-attach">0</property>
+							</packing>
+						</child>
+						<child>
+							<object id="button01" class="GtkButton">
+								<property name="visible">True</property>
+								<property name="label">Button 1</property>
+								<property name="hexpand">True</property>
+								<property name="vexpand">True</property>
+								<property name="relief">GTK_RELIEF_NONE</property>
+							</object>
+							<packing>
+								<property name="left-attach">0</property>
+								<property name="top-attach">1</property>
+							</packing>
+						</child>
+						<child>
+							<object id="button10" class="GtkButton">
+								<property name="visible">True</property>
+								<property name="label">Button 1</property>
+								<property name="hexpand">True</property>
+								<property name="vexpand">True</property>
+								<property name="relief">GTK_RELIEF_NONE</property>
+							</object>
+							<packing>
+								<property name="left-attach">1</property>
+								<property name="top-attach">0</property>
+							</packing>
+						</child>
+						<child>
+							<object id="button11" class="GtkButton">
+								<property name="visible">True</property>
+								<property name="label">Button 1</property>
+								<property name="hexpand">True</property>
+								<property name="vexpand">True</property>
+								<property name="relief">GTK_RELIEF_NONE</property>
+
+							</object>
+							<packing>
+								<property name="left-attach">1</property>
+								<property name="top-attach">1</property>
+							</packing>
+						</child>
+					</object>
+					<packing>
+						<property name="position">1</property>
+					</packing>
+				</child>
+			</object>
+		</child>
+	</object>
+</interface>

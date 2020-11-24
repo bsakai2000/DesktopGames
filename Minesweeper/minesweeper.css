@@ -1,0 +1,5 @@
+button {
+	outline-style: inset;
+	outline-color: darkgray;
+	outline-width: 5px;
+}
