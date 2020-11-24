@@ -1,10 +1,25 @@
+.section {
+	border-style: inset;
+	border-color: darkgray;
+	border-width: 5px;
+}
+
 button {
-	outline-style: inset;
-	outline-color: darkgray;
-	outline-width: 5px;
+	border-style: outset;
+	border-color: darkgray;
+	border-width: 5px;
+}
+
+button:active {
+	border-style: inset;
 }
 
 button.smile {
 	background-image: url("/com/example/DesktopGames/Minesweeper/images/smile.png");
 	background-size: contain;
+}
+
+label.display {
+	color: red;
+	background-color: black;
 }
