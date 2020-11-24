@@ -1,11 +1,13 @@
+#include <stdbool.h>
 #include <gtk/gtk.h>
 
 // Prefix for GResource files
 #define GRESOURCE_PREFIX "/com/example/DesktopGames/Minesweeper/"
 
-static void print_hello (GtkWidget *widget, gpointer data)
+void print_location(GtkWidget *widget, gpointer data)
 {
-	g_print ("Hello World\n");
+	int* dimensions = g_object_get_data(G_OBJECT(widget), "loc");
+	printf("LEFT: %d, TOP: %d\n", dimensions[0], dimensions[1]);
 }
 
 /**
@@ -32,11 +34,40 @@ void load_css()
 
 int main (int argc, char *argv[])
 {
+	int height = 20;
+	int width  = 20;
+	
 	gtk_init (&argc, &argv);
 
 	// Load UI definition from packaged data
-	GtkBuilder* builder = gtk_builder_new_from_resource(GRESOURCE_PREFIX "minesweeper.ui");
+	GtkBuilder* main_builder = gtk_builder_new_from_resource(GRESOURCE_PREFIX "minesweeper.ui");
 
+	GtkGrid* grid = GTK_GRID(gtk_builder_get_object(main_builder, "grid"));
+	for(int i = 0; i < height; ++i)
+	{
+		for(int j = 0; j < width; ++j)
+		{
+			// Create new button
+			GtkButton* new_button = GTK_BUTTON(gtk_button_new());
+			gtk_widget_set_visible(GTK_WIDGET(new_button), true);
+			gtk_widget_set_hexpand(GTK_WIDGET(new_button), true);
+			gtk_widget_set_vexpand(GTK_WIDGET(new_button), true);
+			gtk_button_set_relief(new_button, GTK_RELIEF_NONE);
+
+			// Tell button where it is
+			int* dimensions = calloc(2, sizeof(int));
+			dimensions[0] = j;
+			dimensions[1] = i;
+			g_object_set_data(G_OBJECT(new_button), "loc", dimensions); 
+
+			// Set callback
+			g_signal_connect(new_button, "clicked", G_CALLBACK(print_location), NULL);
+
+			// Attach button to grid
+			gtk_grid_attach(grid, GTK_WIDGET(new_button), j, i, 1, 1);
+		}
+	}
+	
 	// Load and apply CSS
 	load_css();
 
@@ -60,6 +91,6 @@ int main (int argc, char *argv[])
 	gtk_main();
 
 	// Cleanup and return
-	g_clear_object(&builder);
+	g_clear_object(&main_builder);
 	return 0;
 }

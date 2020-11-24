@@ -8,6 +8,8 @@ button {
 	border-style: outset;
 	border-color: darkgray;
 	border-width: 5px;
+	min-height: 0px;
+	min-width: 0px;
 }
 
 button:active {
@@ -16,7 +18,9 @@ button:active {
 
 button.smile {
 	background-image: url("/com/example/DesktopGames/Minesweeper/images/smile.png");
-	background-size: contain;
+	background-size: 100% 100%;
+	min-height: 30px;
+	min-width: 30px;
 }
 
 label.display {
