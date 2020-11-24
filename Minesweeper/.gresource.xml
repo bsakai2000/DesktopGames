@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<gresources>
+	<gresource prefix="com/example/DesktopGames/Minesweeper">
+		<file preprocess="xml-stripblanks" compressed="true">minesweeper.ui</file>
+		<file compressed="true">minesweeper.css</file>
+		<file>images/smile.jpg</file>
+	</gresource>
+</gresources>

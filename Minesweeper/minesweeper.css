@@ -2,4 +2,10 @@ button {
 	outline-style: inset;
 	outline-color: darkgray;
 	outline-width: 5px;
+	background-image: url("smiley.jpg");
+}
+
+.smile {
+	background-image: url("https://smiley.com/static-assets/brand_smiley_main.jpg");
+	background-color: red;
 }

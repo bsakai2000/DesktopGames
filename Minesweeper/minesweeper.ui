@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <interface>
 	<object id="window" class="GtkWindow">
 		<property name="visible">True</property>
@@ -34,6 +35,9 @@
 								<property name="label">smile</property>
 								<property name="relief">GTK_RELIEF_NONE</property>
 								<property name="halign">GTK_ALIGN_FILL</property>
+								<style>
+									<class name="smile"/>
+								</style>
 							</object>
 						</child>
 						<child>
