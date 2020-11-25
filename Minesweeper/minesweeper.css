@@ -8,6 +8,7 @@ button {
 	background-size: 100% 100%;
 	border-style: outset;
 	border-color: darkgray;
+	border-radius: 0px;
 	border-width: 5px;
 	min-height: 0px;
 	min-width: 0px;
@@ -17,14 +18,51 @@ button:active {
 	border-style: inset;
 }
 
+button.clicked {
+	border-style: solid;
+	border-width: 1px;
+	border-color: black;
+	background-image: image(darkgray);
+	margin: 0px
+}
+
+button.bomb {
+	background-image: url("/com/example/DesktopGames/Minesweeper/images/bomb.png");
+}
+
+button.exploded {
+	background-color: red;
+}
+
+
+button.flagged {
+	background-image: url("/com/example/DesktopGames/Minesweeper/images/flag.png");
+}
+
+button.n1 {
+	background-image: url("/com/example/DesktopGames/Minesweeper/images/num1.png");
+}
+
+button.n2 {
+	background-image: url("/com/example/DesktopGames/Minesweeper/images/num2.png");
+}
+
+button.n3 {
+	background-image: image(green);
+}
+
+button.n4 {
+	background-image: image(green);
+}
+
+button.n5 {
+	background-image: image(green);
+}
+
 button.smile {
 	background-image: url("/com/example/DesktopGames/Minesweeper/images/smile.png");
 	min-height: 30px;
 	min-width: 30px;
-}
-
-button.flagged {
-	background-image: url("/com/example/DesktopGames/Minesweeper/images/flag.png");
 }
 
 label.display {

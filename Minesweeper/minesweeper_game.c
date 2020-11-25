@@ -1,5 +1,19 @@
 #include "minesweeper_game.h"
 
+int to_check[][2] = {
+	{ -1, -1},
+	{ -1,  0},
+	{ -1,  1},
+	{  0, -1},
+	//{  0,  0},
+	{  0,  1},
+	{  1, -1},
+	{  1,  0},
+	{  1,  1}
+};
+
+int to_check_len = sizeof(to_check)/sizeof(to_check[0]);
+
 /**
  * Add game->num_bombs bombs to game->board
  *
@@ -31,16 +45,11 @@ static void add_bombs(minesweeper_game* game)
 		int col = to_shuffle[i] % game->width;
 		game->board[row][col] = MINESWEEPER_BOMB;
 
-		// Increment each non-bomb neighbor
-		for(int y = row - 1; y <= row + 1 && y < game->height; ++y)
+		CHECK_NEIGHBORS(col, row, x, y)
 		{
-			for(int x = col - 1; x <= col + 1 && x < game->width; ++x)
+			if(VALID_CELL(x, y, game) && game->board[y][x] != MINESWEEPER_BOMB)
 			{
-				// Increment this cell if it is not a bomb
-				if(x >= 0 && y >= 0 && game->board[y][x] != MINESWEEPER_BOMB)
-				{
-					++(game->board[y][x]);
-				}
+				++(game->board[y][x]);
 			}
 		}
 	}

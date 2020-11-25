@@ -3,7 +3,10 @@
 	<gresource prefix="/com/example/DesktopGames/Minesweeper">
 		<file preprocess="xml-stripblanks" compressed="true">minesweeper.ui</file>
 		<file compressed="true">minesweeper.css</file>
+		<file>images/bomb.png</file>
 		<file>images/flag.png</file>
+		<file>images/num1.png</file>
+		<file>images/num2.png</file>
 		<file>images/smile.png</file>
 	</gresource>
 </gresources>
