@@ -74,28 +74,18 @@ void replace_cell(GtkWidget* widget, coordinate* coord)
 	coord->x = -1;
 	coord->y = -1;
 
-#if 0
-	// Create a label with the string
-	GtkLabel* label = GTK_LABEL(gtk_label_new(val_string));
-	gtk_widget_set_visible(GTK_WIDGET(label), true);
-	gtk_widget_set_hexpand(GTK_WIDGET(label), true);
-	gtk_widget_set_vexpand(GTK_WIDGET(label), true);
-	gtk_widget_set_halign(GTK_WIDGET(label), GTK_ALIGN_FILL);
-
-	// Attach the label to the grid
-	gtk_grid_attach(grid, GTK_WIDGET(label), x, y, 1, 1);
-#endif
-
+	// If this cell has no bomb neighbors, we also expose all its neighbors
+	// This occurs recursively
 	if(val == 0)
 	{
+		// Iterate over all neighbors
 		CHECK_NEIGHBORS(x, y, new_x, new_y)
 		{
+			// If this cell is valid and has not been visited, expose it
 			if(VALID_CELL(new_x, new_y, game) && coords[new_y * game->width + new_x].x != -1)
 			{
-				replace_cell(
-						gtk_grid_get_child_at(grid, new_x, new_y),
-						coords + (new_y * game->width + new_x)
-					    );
+				replace_cell(gtk_grid_get_child_at(grid, new_x, new_y),
+						coords + (new_y * game->width + new_x));
 			}
 		}
 	}
@@ -202,7 +192,7 @@ int main (int argc, char *argv[])
 	gtk_init (&argc, &argv);
 
 	// Setup the game
-	game = minesweeper_new_game(height, width, num_bombs);
+	game = minesweeper_create_game(height, width, num_bombs);
 
 	// Initialize the coordinates
 	coords = calloc(height * width, sizeof(coordinate));
@@ -217,8 +207,8 @@ int main (int argc, char *argv[])
 	load_css();
 
 	// Give me back execution when window closes
-	GObject* window = gtk_builder_get_object (main_builder, "window");
-	g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
+	GObject* window = gtk_builder_get_object (main_builder, "window");	 // No unref
+	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
 #if 0
 	button = gtk_builder_get_object (builder, "button1");

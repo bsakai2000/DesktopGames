@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define MINESWEEPER_BOMB -1
 
@@ -58,7 +59,14 @@ extern int to_check_len;
  * width		The width of the board (cols)
  * num_bombs		The number of bombs on the board
  */
-minesweeper_game* minesweeper_new_game(int height, int width, int num_bombs);
+minesweeper_game* minesweeper_create_game(int height, int width, int num_bombs);
+
+/**
+ * Remove all existing bombs and replace them
+ *
+ * game			The game to restart
+ */
+void minesweeper_restart_game(minesweeper_game* game);
 
 /**
  * Free a minesweeper game and associated memory

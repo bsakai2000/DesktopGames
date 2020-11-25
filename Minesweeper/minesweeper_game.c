@@ -58,7 +58,7 @@ static void add_bombs(minesweeper_game* game)
 	free(to_shuffle);
 }
 
-minesweeper_game* minesweeper_new_game(int height, int width, int num_bombs)
+minesweeper_game* minesweeper_create_game(int height, int width, int num_bombs)
 {
 	// Check for reasonable bounds on the number of bombs
 	if(num_bombs >= height * width || num_bombs <= 0)
@@ -90,6 +90,18 @@ minesweeper_game* minesweeper_new_game(int height, int width, int num_bombs)
 	add_bombs(game);
 
 	return game;
+}
+
+void minesweeper_restart_game(minesweeper_game* game)
+{
+	// Zero all cells
+	for(int i = 0; i < game->height; ++i)
+	{
+		memset(game->board[i], '\0', game->width);
+	}
+
+	// Add bombs
+	add_bombs(game);
 }
 
 void minesweeper_free_game(minesweeper_game* game)
