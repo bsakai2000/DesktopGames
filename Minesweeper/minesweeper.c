@@ -5,6 +5,8 @@
 
 // Prefix for GResource files
 #define GRESOURCE_PREFIX "/com/example/DesktopGames/Minesweeper/"
+
+// Mouseclick constants
 #define MOUSE_PRIMARY 1
 #define MOUSE_SECONDARY 3
 
@@ -14,15 +16,18 @@ typedef struct coordinate
 	int y;
 } coordinate;
 
-minesweeper_game* game = NULL;
-coordinate* coords = NULL;
-bool game_over = false;
-bool has_started = false;
-int timer = 0;
-int flags = 0;
-GtkBuilder* main_builder = NULL;
-GtkLabel* timer_label = NULL;
-GtkLabel* bombs_label = NULL;
+minesweeper_game* game = NULL;		// Holds game information
+coordinate* coords = NULL;		// Holds coordinates of cells for callbacks
+bool game_over = false;			// True if a bomb has been clicked
+bool has_started = false;		// True if the user has taken an action
+int timer = 0;				// Holds the number of seconds the game has been running
+guint timer_timeout = 0;		// Identifies the timer timeout function
+int flags = 0;				// The number of flags placed
+
+GtkBuilder* main_builder = NULL;	// Builder for the UI
+GtkGrid* grid = NULL;			// Grid that holds cells
+GtkLabel* timer_label = NULL;		// Label that shows time remaining
+GtkLabel* bombs_label = NULL;		// Label that shows number of unflagged bombs
 
 /**
  * Update the timer label with the current time
@@ -34,7 +39,10 @@ gboolean update_timer(gpointer user_data)
 {
 	// If the game ends, the timer stops
 	if(game_over)
+	{
+		timer_timeout = 0;
 		return G_SOURCE_REMOVE;
+	}
 
 	// Increment time
 	++timer;
@@ -78,12 +86,11 @@ void update_bombs()
  */
 void click_cell(GtkWidget* widget, coordinate* coord)
 {
-	// Get parent grid
-	GtkGrid* grid = GTK_GRID(gtk_widget_get_parent(widget));	// No unref
 	// Disable the button
 	GtkStyleContext* context = gtk_widget_get_style_context(widget);	// No unref
 	// If this cell has already been clicked, do nothing
-	if(gtk_style_context_has_class(context, "clicked"))
+	if(gtk_style_context_has_class(context, "clicked") ||
+			gtk_style_context_has_class(context, "flagged"))
 	{
 		return;
 	}
@@ -107,12 +114,19 @@ void click_cell(GtkWidget* widget, coordinate* coord)
 		{
 			for(int j = 0; j < game->width; ++j)
 			{
-				if((i != coord->y || j != coord->x) && game->board[i][j] == MINESWEEPER_BOMB)
+				GtkWidget* cell = gtk_grid_get_child_at(grid, j, i);	// No unref
+				gtk_widget_set_can_focus(cell, false);
+				gtk_widget_set_sensitive(cell, false);
+				GtkStyleContext* cell_context = gtk_widget_get_style_context(cell);	//no unref
+				if(game->board[i][j] == MINESWEEPER_BOMB)
 				{
-					GtkWidget* bomb = gtk_grid_get_child_at(grid, j, i);	// No unref
-					GtkStyleContext* bomb_context = gtk_widget_get_style_context(bomb);	//no unref
-					gtk_style_context_add_class(bomb_context, "bomb");
-					gtk_style_context_add_class(bomb_context, "clicked");
+					gtk_style_context_add_class(cell_context, "bomb");
+					gtk_style_context_add_class(cell_context, "clicked");
+				}
+				else if(gtk_style_context_has_class(cell_context, "flagged"))
+				{
+					gtk_style_context_add_class(cell_context, "clicked");
+					gtk_style_context_add_class(cell_context, "false_flag");
 				}
 			}
 		}
@@ -186,7 +200,7 @@ gboolean get_clicks(GtkWidget* widget, GdkEvent* event, gpointer user_data)
 	{
 		has_started = true;
 		timer = 0;
-		g_timeout_add_seconds(1, G_SOURCE_FUNC(update_timer), NULL);
+		timer_timeout = g_timeout_add_seconds(1, G_SOURCE_FUNC(update_timer), NULL);
 	}
 
 	return 0;
@@ -216,17 +230,13 @@ void load_css()
 
 /**
  * Add the buttons and signals to the grid
- *
- * height		The number of rows to add
- * width		The number of columns to add
  */
-void setup_ui(int height, int width)
+void setup_ui()
 {
-	GtkGrid* grid = GTK_GRID(gtk_builder_get_object(main_builder, "grid"));
 	// Add buttons to the grid
-	for(int i = 0; i < width; ++i)
+	for(int i = 0; i < game->width; ++i)
 	{
-		for(int j = 0; j < height; ++j)
+		for(int j = 0; j < game->height; ++j)
 		{
 			// Create new button
 			GtkButton* new_button = GTK_BUTTON(gtk_button_new());	// No unref
@@ -236,14 +246,49 @@ void setup_ui(int height, int width)
 			gtk_button_set_relief(new_button, GTK_RELIEF_NORMAL);
 
 			// Set callback
-			coords[j * width + i].x = i;
-			coords[j * width + i].y = j;
-			g_signal_connect(new_button, "button-press-event", G_CALLBACK(get_clicks), coords + (j * width + i));
+			coords[j * game->width + i].x = i;
+			coords[j * game->width + i].y = j;
+			g_signal_connect(new_button, "button-press-event", G_CALLBACK(get_clicks), coords + (j * game->width + i));
 
 			// Attach button to grid
 			gtk_grid_attach(grid, GTK_WIDGET(new_button), i, j, 1, 1);
 		}
 	}
+}
+
+/**
+ * Restart the game, including the timer label, bombs label, game state, and
+ * all cells
+ *
+ * button		Ignored
+ * user_data		Ignored
+ */
+void restart_game(GtkButton* button, gpointer user_data)
+{
+	gtk_label_set_text(timer_label, "000");
+	if(timer_timeout)
+	{
+		g_source_remove(timer_timeout);
+		timer_timeout = 0;
+	}
+	minesweeper_restart_game(game);
+
+	for(int i = 0; i < game->width; ++i)
+	{
+		for(int j = 0; j < game->height; ++j)
+		{
+			GtkWidget* cell = gtk_grid_get_child_at(grid, i, j);
+			gtk_widget_destroy(cell);
+		}
+	}
+
+	setup_ui();
+	update_bombs();
+
+	game_over = false;
+	has_started = false;
+	timer = 0;
+	flags = 0;
 }
 
 int main (int argc, char *argv[])
@@ -262,27 +307,22 @@ int main (int argc, char *argv[])
 	
 	// Load UI definition from packaged data
 	main_builder = gtk_builder_new_from_resource(GRESOURCE_PREFIX "minesweeper.ui");
+	grid = GTK_GRID(gtk_builder_get_object(main_builder, "grid"));	// No unref
 
-	// Setup the UI
-	setup_ui(height, width);
-
-	// Load and apply CSS
-	load_css();
+	GObject* smile = gtk_builder_get_object(main_builder, "smile");
+	g_signal_connect(smile, "clicked", G_CALLBACK(restart_game), NULL);
 
 	// Give me back execution when window closes
 	GObject* window = gtk_builder_get_object(main_builder, "window");	 // No unref
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-#if 0
-	button = gtk_builder_get_object (builder, "button1");
-	g_signal_connect (button, "clicked", G_CALLBACK (print_hello), NULL);
+	// Load and apply CSS
+	load_css();
 
-	button = gtk_builder_get_object (builder, "button2");
-	g_signal_connect (button, "clicked", G_CALLBACK (print_hello), NULL);
+	// Setup the UI
+	setup_ui();
+	update_bombs();
 
-	button = gtk_builder_get_object (builder, "quit");
-	g_signal_connect (button, "clicked", G_CALLBACK (gtk_main_quit), NULL);
-#endif
 
 	// Start the game
 	gtk_main();

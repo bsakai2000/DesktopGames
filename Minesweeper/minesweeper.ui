@@ -17,7 +17,6 @@
 						<child>
 							<object id="bombs" class="GtkLabel">
 								<property name="visible">True</property>
-								<property name="label">bombs</property>
 								<property name="halign">GTK_ALIGN_START</property>
 								<style>
 									<class name="display"/>
