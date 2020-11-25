@@ -52,7 +52,7 @@
 						<child>
 							<object id="timer" class="GtkLabel">
 								<property name="visible">True</property>
-								<property name="label">time</property>
+								<property name="label">000</property>
 								<property name="halign">GTK_ALIGN_END</property>
 								<style>
 									<class name="display"/>

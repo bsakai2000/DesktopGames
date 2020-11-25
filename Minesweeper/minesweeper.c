@@ -16,35 +16,84 @@ typedef struct coordinate
 
 minesweeper_game* game = NULL;
 coordinate* coords = NULL;
-bool gameOver = false;
+bool game_over = false;
+bool has_started = false;
+int timer = 0;
+int flags = 0;
+GtkBuilder* main_builder = NULL;
+GtkLabel* timer_label = NULL;
+GtkLabel* bombs_label = NULL;
 
 /**
- * Replace widget with the corresponding value from game
+ * Update the timer label with the current time
+ * Called every second, so we don't have to do anything tricky
+ *
+ * user_data		Ignored
+ */
+gboolean update_timer(gpointer user_data)
+{
+	// If the game ends, the timer stops
+	if(game_over)
+		return G_SOURCE_REMOVE;
+
+	// Increment time
+	++timer;
+
+	// Get timer_label if we haven't yet
+	if(!timer_label)
+	{
+		timer_label = GTK_LABEL(gtk_builder_get_object(main_builder, "timer"));	 // No unref
+	}
+
+	// Write the time to the label
+	char timer_str[5] = { 0 };
+	snprintf(timer_str, sizeof(timer_str) - 1, "%.3d", timer);
+	gtk_label_set_text(timer_label, timer_str);
+
+	return G_SOURCE_CONTINUE;
+}
+
+/**
+ * Update the bombs label
+ */
+void update_bombs()
+{
+	// Get bombs label if we haven't yet
+	if(!bombs_label)
+	{
+		bombs_label = GTK_LABEL(gtk_builder_get_object(main_builder, "bombs"));	 // No unref
+	}
+
+	// Write the number of remaining bombs to the label
+	char bombs_str[5] = { 0 };
+	snprintf(bombs_str, sizeof(bombs_str) - 1, "%.3d", MAX(game->num_bombs - flags, 0));
+	gtk_label_set_text(bombs_label, bombs_str);
+}
+
+/**
+ * Change the cell to display its value
  *
  * widget		The widget to replace
  * coord		The coordinates of the cell in the grid
  */
-void replace_cell(GtkWidget* widget, coordinate* coord)
+void click_cell(GtkWidget* widget, coordinate* coord)
 {
-	if(coord->x == -1)
-	{
-		return;
-	}
-
-	int x = coord->x; 
-	int y = coord->y;
-
 	// Get parent grid
 	GtkGrid* grid = GTK_GRID(gtk_widget_get_parent(widget));	// No unref
 	// Disable the button
 	GtkStyleContext* context = gtk_widget_get_style_context(widget);	// No unref
+	// If this cell has already been clicked, do nothing
+	if(gtk_style_context_has_class(context, "clicked"))
+	{
+		return;
+	}
 	gtk_style_context_add_class(context, "clicked");
 	gtk_widget_set_can_focus(widget, false);
 	gtk_widget_set_sensitive(widget, false);
 
 	// Apply correct image style
 	char style_string[5] = { 0 };
-	int val = game->board[y][x];
+	int val = game->board[coord->y][coord->x];
 	if(val > 0)
 	{
 		snprintf(style_string, sizeof(style_string) - 1, "n%d", val);
@@ -58,7 +107,7 @@ void replace_cell(GtkWidget* widget, coordinate* coord)
 		{
 			for(int j = 0; j < game->width; ++j)
 			{
-				if((i != y || j != x) && game->board[i][j] == MINESWEEPER_BOMB)
+				if((i != coord->y || j != coord->x) && game->board[i][j] == MINESWEEPER_BOMB)
 				{
 					GtkWidget* bomb = gtk_grid_get_child_at(grid, j, i);	// No unref
 					GtkStyleContext* bomb_context = gtk_widget_get_style_context(bomb);	//no unref
@@ -67,24 +116,20 @@ void replace_cell(GtkWidget* widget, coordinate* coord)
 				}
 			}
 		}
-		gameOver = true;
+		game_over = true;
 	}
-
-	// Set coordinates to (-1, -1) to signal we've been hit
-	coord->x = -1;
-	coord->y = -1;
 
 	// If this cell has no bomb neighbors, we also expose all its neighbors
 	// This occurs recursively
 	if(val == 0)
 	{
 		// Iterate over all neighbors
-		CHECK_NEIGHBORS(x, y, new_x, new_y)
+		CHECK_NEIGHBORS(coord->x, coord->y, new_x, new_y)
 		{
 			// If this cell is valid and has not been visited, expose it
-			if(VALID_CELL(new_x, new_y, game) && coords[new_y * game->width + new_x].x != -1)
+			if(VALID_CELL(new_x, new_y, game))
 			{
-				replace_cell(gtk_grid_get_child_at(grid, new_x, new_y),
+				click_cell(gtk_grid_get_child_at(grid, new_x, new_y),
 						coords + (new_y * game->width + new_x));
 			}
 		}
@@ -101,7 +146,7 @@ void replace_cell(GtkWidget* widget, coordinate* coord)
  */
 gboolean get_clicks(GtkWidget* widget, GdkEvent* event, gpointer user_data)
 {
-	if(gameOver)
+	if(game_over)
 	{
 		return 1;
 	}
@@ -116,8 +161,8 @@ gboolean get_clicks(GtkWidget* widget, GdkEvent* event, gpointer user_data)
 				return 1;
 			}
 
-			// Replace the cell with a label
-			replace_cell(widget, (coordinate*) user_data);
+			// Show the value of the cell
+			click_cell(widget, (coordinate*) user_data);
 
 			break;
 		case MOUSE_SECONDARY:
@@ -125,13 +170,25 @@ gboolean get_clicks(GtkWidget* widget, GdkEvent* event, gpointer user_data)
 			if(gtk_style_context_has_class(context, "flagged"))
 			{
 				gtk_style_context_remove_class(context, "flagged");
+				--flags;
 			}
 			else
 			{
 				gtk_style_context_add_class(context, "flagged");
+				++flags;
 			}
+
+			update_bombs();
 			break;
 	}
+
+	if(!has_started)
+	{
+		has_started = true;
+		timer = 0;
+		g_timeout_add_seconds(1, G_SOURCE_FUNC(update_timer), NULL);
+	}
+
 	return 0;
 }
 
@@ -157,7 +214,13 @@ void load_css()
 	g_clear_object(&css);
 }
 
-void setup_ui(GtkBuilder* main_builder, int height, int width)
+/**
+ * Add the buttons and signals to the grid
+ *
+ * height		The number of rows to add
+ * width		The number of columns to add
+ */
+void setup_ui(int height, int width)
 {
 	GtkGrid* grid = GTK_GRID(gtk_builder_get_object(main_builder, "grid"));
 	// Add buttons to the grid
@@ -198,16 +261,16 @@ int main (int argc, char *argv[])
 	coords = calloc(height * width, sizeof(coordinate));
 	
 	// Load UI definition from packaged data
-	GtkBuilder* main_builder = gtk_builder_new_from_resource(GRESOURCE_PREFIX "minesweeper.ui");
+	main_builder = gtk_builder_new_from_resource(GRESOURCE_PREFIX "minesweeper.ui");
 
 	// Setup the UI
-	setup_ui(main_builder, height, width);
+	setup_ui(height, width);
 
 	// Load and apply CSS
 	load_css();
 
 	// Give me back execution when window closes
-	GObject* window = gtk_builder_get_object (main_builder, "window");	 // No unref
+	GObject* window = gtk_builder_get_object(main_builder, "window");	 // No unref
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
 #if 0

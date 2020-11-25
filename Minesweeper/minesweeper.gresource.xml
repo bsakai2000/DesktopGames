@@ -8,5 +8,6 @@
 		<file>images/num1.png</file>
 		<file>images/num2.png</file>
 		<file>images/smile.png</file>
+		<file>images/smile_shades.png</file>
 	</gresource>
 </gresources>

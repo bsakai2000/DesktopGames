@@ -28,6 +28,7 @@ button.clicked {
 
 button.bomb {
 	background-image: url("/com/example/DesktopGames/Minesweeper/images/bomb.png");
+	background-color: darkgray;
 }
 
 button.exploded {
