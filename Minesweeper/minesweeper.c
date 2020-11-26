@@ -149,6 +149,7 @@ void click_cell(GtkWidget* widget, coordinate* coord)
 
 	// Apply correct image style
 	int val = game->board[coord->y][coord->x];
+	char style_string[5] = { 0 };
 	switch(val)
 	{
 		// If this cell has no bomb neighbors, we also expose all its neighbors
@@ -175,7 +176,6 @@ void click_cell(GtkWidget* widget, coordinate* coord)
 
 		// If this cell has a normal value, just expose it
 		default:
-			char style_string[5] = { 0 };
 			snprintf(style_string, sizeof(style_string) - 1, "n%d", val);
 			gtk_style_context_add_class(context, style_string);
 			break;
