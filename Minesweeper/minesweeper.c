@@ -28,11 +28,55 @@ bool has_started = false;		// True if the user has taken an action
 int timer = 0;				// Holds the number of seconds the game has been running
 guint timer_timeout = 0;		// Identifies the timer timeout function
 int flags = 0;				// The number of flags placed
+int exposed_cells = 0;			// The number of cells the player has eposed
 
 GtkBuilder* main_builder = NULL;	// Builder for the UI
 GtkGrid* grid = NULL;			// Grid that holds cells
 GtkLabel* timer_label = NULL;		// Label that shows time remaining
 GtkLabel* bombs_label = NULL;		// Label that shows number of unflagged bombs
+GtkWidget* smile = NULL;		// Smile status button
+
+/**
+ * Ends the current game, disabling all cells and exposing unflagged bombs
+ *
+ * did_win		True if the player won, false otherwise
+ */
+void end_game(bool did_win)
+{
+	game_over = true;
+
+	for(int i = 0; i < game->height; ++i)
+	{
+		for(int j = 0; j < game->width; ++j)
+		{
+			GtkWidget* cell = gtk_grid_get_child_at(grid, j, i);	// No unref
+			// Disable the cell
+			gtk_widget_set_can_focus(cell, false);
+			gtk_widget_set_sensitive(cell, false);
+			// If we lost, expose unflagged bombs
+			if(!did_win)
+			{
+				GtkStyleContext* cell_context = gtk_widget_get_style_context(cell);	//no unref
+				if(game->board[i][j] == MINESWEEPER_BOMB)
+				{
+					// If this cell is a bomb, expose it
+					gtk_style_context_add_class(cell_context, "bomb");
+					gtk_style_context_add_class(cell_context, "clicked");
+				}
+				else if(gtk_style_context_has_class(cell_context, "flagged"))
+				{
+					// If this cell is a non-bomb flag, expose it as a false flag
+					gtk_style_context_add_class(cell_context, "clicked");
+					gtk_style_context_add_class(cell_context, "false_flag");
+				}
+			}
+		}
+	}
+
+	// Set the smile
+	GtkStyleContext* smile_context = gtk_widget_get_style_context(smile);	// No unref
+	gtk_style_context_add_class(smile_context, did_win?"win":"lose");
+}
 
 /**
  * Update the timer label with the current time
@@ -104,7 +148,6 @@ void click_cell(GtkWidget* widget, coordinate* coord)
 	gtk_widget_set_sensitive(widget, false);
 
 	// Apply correct image style
-	char style_string[5] = { 0 };
 	int val = game->board[coord->y][coord->x];
 	switch(val)
 	{
@@ -127,37 +170,22 @@ void click_cell(GtkWidget* widget, coordinate* coord)
 		// If this cell is a bomb, end the game
 		case -1:
 			gtk_style_context_add_class(context, "exploded");
-			for(int i = 0; i < game->height; ++i)
-			{
-				for(int j = 0; j < game->width; ++j)
-				{
-					GtkWidget* cell = gtk_grid_get_child_at(grid, j, i);	// No unref
-					// Disable the cell
-					gtk_widget_set_can_focus(cell, false);
-					gtk_widget_set_sensitive(cell, false);
-					GtkStyleContext* cell_context = gtk_widget_get_style_context(cell);	//no unref
-					if(game->board[i][j] == MINESWEEPER_BOMB)
-					{
-						// If this cell is a bomb, expose it
-						gtk_style_context_add_class(cell_context, "bomb");
-						gtk_style_context_add_class(cell_context, "clicked");
-					}
-					else if(gtk_style_context_has_class(cell_context, "flagged"))
-					{
-						// If this cell is a non-bomb flag, expose it as a false flag
-						gtk_style_context_add_class(cell_context, "clicked");
-						gtk_style_context_add_class(cell_context, "false_flag");
-					}
-				}
-			}
-			game_over = true;
-			break;
+			end_game(false);
+			return;
 
 		// If this cell has a normal value, just expose it
 		default:
+			char style_string[5] = { 0 };
 			snprintf(style_string, sizeof(style_string) - 1, "n%d", val);
 			gtk_style_context_add_class(context, style_string);
 			break;
+	}
+
+	// If we've exposed all non-bomb cells, we win
+	++exposed_cells;
+	if(exposed_cells == (game->height * game->width) - game->num_bombs)
+	{
+		end_game(true);
 	}
 
 }
@@ -276,15 +304,19 @@ void setup_ui()
  */
 void restart_game(GtkButton* button, gpointer user_data)
 {
+	// Clear out the timer label
 	if(timer_label)
 		gtk_label_set_text(timer_label, "000");
+	// Disable the timer if it's running
 	if(timer_timeout)
 	{
 		g_source_remove(timer_timeout);
 		timer_timeout = 0;
 	}
+	// Reset the underlying game
 	minesweeper_restart_game(game);
 
+	// Remove all cells
 	for(int i = 0; i < game->width; ++i)
 	{
 		for(int j = 0; j < game->height; ++j)
@@ -294,13 +326,22 @@ void restart_game(GtkButton* button, gpointer user_data)
 		}
 	}
 
-	setup_ui();
-	update_bombs();
+	// Reset the smile status button
+	GtkStyleContext* smile_context = gtk_widget_get_style_context(smile);	// No unref
+	gtk_style_context_remove_class(smile_context, "lose");
+	gtk_style_context_remove_class(smile_context, "win");
 
+	// Reset state variables
 	game_over = false;
 	has_started = false;
 	timer = 0;
 	flags = 0;
+	exposed_cells = 0;
+
+	// Re-add the cells
+	setup_ui();
+	// Reset the bomb counter
+	update_bombs();
 }
 
 /**
@@ -332,7 +373,7 @@ int main (int argc, char *argv[])
 		{
 			case 'h':
 				print_help(argv[0]);
-				exit(0);
+				return 0;
 			case 'r':
 				height = atoi(optarg);
 				break;
@@ -347,14 +388,20 @@ int main (int argc, char *argv[])
 				break;
 			case '?':
 				print_help(argv[0]);
-				exit(1);
+				return 1;
 		}
 	}
+
+	srand(seed);
 
 	gtk_init (&argc, &argv);
 
 	// Setup the game
 	game = minesweeper_create_game(height, width, num_bombs);
+	if(!game)
+	{
+		return 1;
+	}
 
 	// Initialize the coordinates
 	coords = calloc(height * width, sizeof(coordinate));
@@ -363,8 +410,8 @@ int main (int argc, char *argv[])
 	main_builder = gtk_builder_new_from_resource(GRESOURCE_PREFIX "minesweeper.ui");
 	grid = GTK_GRID(gtk_builder_get_object(main_builder, "grid"));	// No unref
 
-	GObject* smile = gtk_builder_get_object(main_builder, "smile");
-	g_signal_connect(smile, "clicked", G_CALLBACK(restart_game), NULL);
+	smile = GTK_WIDGET(gtk_builder_get_object(main_builder, "smile"));
+	g_signal_connect(G_OBJECT(smile), "clicked", G_CALLBACK(restart_game), NULL);
 
 	// Give me back execution when window closes
 	GObject* window = gtk_builder_get_object(main_builder, "window");	 // No unref

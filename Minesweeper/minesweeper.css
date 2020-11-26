@@ -95,6 +95,14 @@ button.smile {
 	min-width: 30px;
 }
 
+button.smile.lose {
+	background-image: url("/com/example/DesktopGames/Minesweeper/images/smile_lose.png");
+}
+
+button.smile.win {
+	background-image: url("/com/example/DesktopGames/Minesweeper/images/smile_shades.png");
+}
+
 label.display {
 	color: red;
 	background-color: black;

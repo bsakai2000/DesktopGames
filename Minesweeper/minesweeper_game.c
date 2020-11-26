@@ -60,16 +60,17 @@ static void add_bombs(minesweeper_game* game)
 
 minesweeper_game* minesweeper_create_game(int height, int width, int num_bombs)
 {
-	// Check for reasonable bounds on the number of bombs
-	if(num_bombs >= height * width || num_bombs <= 0)
-	{
-		printf("Invalid number of bombs!\n");
-		return NULL;
-	}
 	// Check for reasonable bounds on dimensions
 	if(height <= 0 || height > MAX_DIMENSION || width <= 0 || width > MAX_DIMENSION)
 	{
 		printf("Invalid dimensions!\n");
+		return NULL;
+	}
+
+	// Check for reasonable bounds on the number of bombs
+	if(num_bombs >= height * width || num_bombs <= 0)
+	{
+		printf("Invalid number of bombs!\n");
 		return NULL;
 	}
 
