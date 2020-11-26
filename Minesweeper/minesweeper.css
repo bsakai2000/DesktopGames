@@ -3,6 +3,7 @@
 
 * {
 	background-color: @bg-color;
+	font-size: 50px;
 }
 
 .section {
@@ -18,8 +19,8 @@ button {
 	border-radius: 0px;
 	border-style: outset;
 	border-width: 3px;
-	min-height: 0px;
-	min-width: 0px;
+	min-height: 5px;
+	min-width: 5px;
 }
 
 button:active {
@@ -49,7 +50,7 @@ button.flagged {
 button.flagged.bomb.clicked {
 	border-color: @border-color;
 	border-style: outset;
-	border-width: 5px;
+	border-width: 3px;
 }
 
 button.flagged.clicked.false_flag {
@@ -65,15 +66,27 @@ button.n2 {
 }
 
 button.n3 {
-	background-image: image(green);
+	background-image: url("/com/example/DesktopGames/Minesweeper/images/num3.png");
 }
 
 button.n4 {
-	background-image: image(green);
+	background-image: url("/com/example/DesktopGames/Minesweeper/images/num4.png");
 }
 
 button.n5 {
-	background-image: image(green);
+	background-image: url("/com/example/DesktopGames/Minesweeper/images/num5.png");
+}
+
+button.n6 {
+	background-image: url("/com/example/DesktopGames/Minesweeper/images/num6.png");
+}
+
+button.n7 {
+	background-image: url("/com/example/DesktopGames/Minesweeper/images/num7.png");
+}
+
+button.n8 {
+	background-image: url("/com/example/DesktopGames/Minesweeper/images/num8.png");
 }
 
 button.smile {

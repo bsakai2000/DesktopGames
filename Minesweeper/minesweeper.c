@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <unistd.h>
 #include <gtk/gtk.h>
 
 #include "minesweeper_game.h"
@@ -9,6 +10,10 @@
 // Mouseclick constants
 #define MOUSE_PRIMARY 1
 #define MOUSE_SECONDARY 3
+
+#define DEFAULT_HEIGHT 20
+#define DEFAULT_WIDTH 20
+#define BOMB_DENSITY 0.05
 
 typedef struct coordinate
 {
@@ -101,52 +106,58 @@ void click_cell(GtkWidget* widget, coordinate* coord)
 	// Apply correct image style
 	char style_string[5] = { 0 };
 	int val = game->board[coord->y][coord->x];
-	if(val > 0)
+	switch(val)
 	{
-		snprintf(style_string, sizeof(style_string) - 1, "n%d", val);
-		gtk_style_context_add_class(context, style_string);
-	}
-	if(val == -1)
-	{
-		gtk_style_context_add_class(context, "bomb");
-		gtk_style_context_add_class(context, "exploded");
-		for(int i = 0; i < game->height; ++i)
-		{
-			for(int j = 0; j < game->width; ++j)
-			{
-				GtkWidget* cell = gtk_grid_get_child_at(grid, j, i);	// No unref
-				gtk_widget_set_can_focus(cell, false);
-				gtk_widget_set_sensitive(cell, false);
-				GtkStyleContext* cell_context = gtk_widget_get_style_context(cell);	//no unref
-				if(game->board[i][j] == MINESWEEPER_BOMB)
-				{
-					gtk_style_context_add_class(cell_context, "bomb");
-					gtk_style_context_add_class(cell_context, "clicked");
-				}
-				else if(gtk_style_context_has_class(cell_context, "flagged"))
-				{
-					gtk_style_context_add_class(cell_context, "clicked");
-					gtk_style_context_add_class(cell_context, "false_flag");
-				}
-			}
-		}
-		game_over = true;
-	}
+		// If this cell has no bomb neighbors, we also expose all its neighbors
+		// This occurs recursively
+		case 0:
 
-	// If this cell has no bomb neighbors, we also expose all its neighbors
-	// This occurs recursively
-	if(val == 0)
-	{
-		// Iterate over all neighbors
-		CHECK_NEIGHBORS(coord->x, coord->y, new_x, new_y)
-		{
-			// If this cell is valid and has not been visited, expose it
-			if(VALID_CELL(new_x, new_y, game))
+			// Iterate over all neighbors
+			CHECK_NEIGHBORS(coord->x, coord->y, new_x, new_y)
 			{
-				click_cell(gtk_grid_get_child_at(grid, new_x, new_y),
-						coords + (new_y * game->width + new_x));
+				// If this cell is valid and has not been visited, expose it
+				if(VALID_CELL(new_x, new_y, game))
+				{
+					click_cell(gtk_grid_get_child_at(grid, new_x, new_y),
+							coords + (new_y * game->width + new_x));
+				}
 			}
-		}
+			break;
+
+		// If this cell is a bomb, end the game
+		case -1:
+			gtk_style_context_add_class(context, "exploded");
+			for(int i = 0; i < game->height; ++i)
+			{
+				for(int j = 0; j < game->width; ++j)
+				{
+					GtkWidget* cell = gtk_grid_get_child_at(grid, j, i);	// No unref
+					// Disable the cell
+					gtk_widget_set_can_focus(cell, false);
+					gtk_widget_set_sensitive(cell, false);
+					GtkStyleContext* cell_context = gtk_widget_get_style_context(cell);	//no unref
+					if(game->board[i][j] == MINESWEEPER_BOMB)
+					{
+						// If this cell is a bomb, expose it
+						gtk_style_context_add_class(cell_context, "bomb");
+						gtk_style_context_add_class(cell_context, "clicked");
+					}
+					else if(gtk_style_context_has_class(cell_context, "flagged"))
+					{
+						// If this cell is a non-bomb flag, expose it as a false flag
+						gtk_style_context_add_class(cell_context, "clicked");
+						gtk_style_context_add_class(cell_context, "false_flag");
+					}
+				}
+			}
+			game_over = true;
+			break;
+
+		// If this cell has a normal value, just expose it
+		default:
+			snprintf(style_string, sizeof(style_string) - 1, "n%d", val);
+			gtk_style_context_add_class(context, style_string);
+			break;
 	}
 
 }
@@ -265,7 +276,8 @@ void setup_ui()
  */
 void restart_game(GtkButton* button, gpointer user_data)
 {
-	gtk_label_set_text(timer_label, "000");
+	if(timer_label)
+		gtk_label_set_text(timer_label, "000");
 	if(timer_timeout)
 	{
 		g_source_remove(timer_timeout);
@@ -291,12 +303,54 @@ void restart_game(GtkButton* button, gpointer user_data)
 	flags = 0;
 }
 
+/**
+ * Prints the help message
+ */
+void print_help(char* filename)
+{
+	printf("Usage: %s [OPTIONS]\n", filename);
+	printf("Options:\n");
+	printf("\t-b\tThe number of bombs to place\n");
+	printf("\t-c\tThe number of columns (between 1 and %d)\n", MAX_DIMENSION);
+	printf("\t-h\tPrint this help message\n");
+	printf("\t-r\tThe number of rows (between 1 and %d)\n", MAX_DIMENSION);
+	printf("\t-s\tThe seed to use\n");
+}
+
 int main (int argc, char *argv[])
 {
-	int height = 20;
-	int width  = 20;
-	int num_bombs = 50;
-	
+	int height = DEFAULT_HEIGHT;
+	int width  = DEFAULT_WIDTH;
+	int num_bombs = height * width * BOMB_DENSITY;
+	int seed = time(0);
+	char c;
+
+	// Get options from the 
+	while((c = getopt(argc, argv, "hr:c:b:s:")) > 0)
+	{
+		switch(c)
+		{
+			case 'h':
+				print_help(argv[0]);
+				exit(0);
+			case 'r':
+				height = atoi(optarg);
+				break;
+			case 'c':
+				width = atoi(optarg);
+				break;
+			case 'b':
+				num_bombs = atoi(optarg);
+				break;
+			case 's':
+				seed = atoi(optarg);
+				break;
+			case '?':
+				print_help(argv[0]);
+				exit(1);
+		}
+	}
+
 	gtk_init (&argc, &argv);
 
 	// Setup the game

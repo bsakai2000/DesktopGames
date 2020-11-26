@@ -1,6 +1,7 @@
-CFLAGS += `pkg-config gtk+-3.0 --cflags`
+DEPS = gtk+-3.0
+CFLAGS += `pkg-config $(DEPS) --cflags`
 CFLAGS += -g -Wall
-LDLIBS += `pkg-config gtk+-3.0 --libs`
+LDLIBS += `pkg-config $(DEPS) --libs`
 
 all: minesweeper
 
