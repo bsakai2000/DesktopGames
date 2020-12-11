@@ -15,5 +15,8 @@ minesweeper_game.o: minesweeper_game.c minesweeper_game.h
 gresource.c: minesweeper.gresource.xml $(shell glib-compile-resources --generate-dependencies minesweeper.gresource.xml)
 	glib-compile-resources --target=$@ --generate-source $<
 
+minesweeper.6: minesweeper.6.md
+	 pandoc $< -s -t man -o $@
+
 clean:
 	rm -f *.o gresource.c minesweeper

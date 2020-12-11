@@ -114,19 +114,3 @@ void minesweeper_free_game(minesweeper_game* game)
 	free(game->board);
 	free(game);
 }
-
-#if 0
-int main(int argc, char* argv[])
-{
-	srand(argv[1][0]);
-	minesweeper_game* game = minesweeper_new_game(10, 10, 10);
-	for(int i = 0; i < game->height; ++i)
-	{
-		for(int j = 0; j < game->width; ++j)
-		printf("%d\t", game->board[i][j]);
-		printf("\n");
-	}
-
-	minesweeper_free_game(game);
-}
-#endif
