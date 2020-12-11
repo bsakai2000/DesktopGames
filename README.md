@@ -19,7 +19,7 @@ framework.
 
 ## Compilation
 A Makefile is provided in each subdirectory to build that game. Dependencies
-like images and CSS files are bundled using `glib-compile-resources, allowing
+like images and CSS files are bundled using `glib-compile-resources`, allowing
 them to be built directly into the final binary, so executables should be
 distributable without also including other resources
 
