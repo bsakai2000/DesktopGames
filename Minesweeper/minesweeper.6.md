@@ -1,4 +1,4 @@
-% MINESWEEPER(6) DesktopGamesv1.0.0 | Games Manual
+% MINESWEEPER(6) DesktopGames 1.0.0 | Games Manual
 %
 % 2020-12-11
 
@@ -12,7 +12,7 @@ minesweeper - A Minesweeper clone
 
 # DESCRIPTION
 
-A Minesweeeper game written in GTK3+, modelled after the Window
+A Minesweeeper game written in GTK3+, modelled after the Windows XP Minesweeper
 
 **-b** _bombs_
 : Place _bombs_ bombs on the playing field
