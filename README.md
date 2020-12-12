@@ -141,3 +141,12 @@ First, run ``autoreconf -i` to generate automake files including the
 `./configure` script. Then run `./configure` to generate a `Makefile` from the
 `Makefile.am` templates, then finally run `make` to generate the final files
 from the `Makefile`
+
+### Packaging with automake
+The maintainer (me) should run `make dist` to generate a tar file containing
+all required source materials as well as the `./configure` script, so end users
+will not need to run `autoconf` on their own systems. This removes a build
+dependency for the final user. Files that are required for distribution that
+are not required by default can be specified using the `EXTRA_DIST` variable in
+the `Makefile.am` that declares how to build it. This is how I package built
+manpages.
