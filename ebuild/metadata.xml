@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>brandon.sakai@gmail.com</email>
+		<name>Brandon Sakai</name>
+	</maintainer>
+	<upstream>
+		<remote-id type="github">bsakai2000/DesktopGames</remote-id>
+	</upstream>
+</pkgmetadata>
