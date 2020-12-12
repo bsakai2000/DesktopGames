@@ -157,4 +157,6 @@ installation on my own system. Because I handle everything in the Makefile, I
 actually have no need for anything other than the default functions, so the
 ebuild is super short. Of particular note are the `KEYWORD`, which identifies
 which platform it supports, the `DEPEND` for runtime dependencies, and
-`BDEPEND` for build dependencies.
+`BDEPEND` for build dependencies. The `metadata.xml` file just describes the
+ebuild, and finally if installed the ebuild will require a `Manifest` file
+which can be built with the `repoman manifest` command.
