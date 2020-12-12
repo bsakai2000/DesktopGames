@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([Desktop Games], [1.0.2], [brandon.sakai@gmail.com])
+AC_INIT([Desktop Games], [1.0.3], [brandon.sakai@gmail.com])
 AC_CONFIG_SRCDIR([Minesweeper/minesweeper.c])
 AM_INIT_AUTOMAKE([-Wall foreign])
 
