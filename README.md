@@ -150,3 +150,11 @@ dependency for the final user. Files that are required for distribution that
 are not required by default can be specified using the `EXTRA_DIST` variable in
 the `Makefile.am` that declares how to build it. This is how I package built
 manpages.
+
+## How do I write my own ebuild?
+I use Gentoo, so it makes sense that I would need to write a file for
+installation on my own system. Because I handle everything in the Makefile, I
+actually have no need for anything other than the default functions, so the
+ebuild is super short. Of particular note are the `KEYWORD`, which identifies
+which platform it supports, the `DEPEND` for runtime dependencies, and
+`BDEPEND` for build dependencies.
