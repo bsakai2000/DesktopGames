@@ -122,8 +122,8 @@ void update_bombs()
 	}
 
 	// Write the number of remaining bombs to the label
-	char bombs_str[5] = { 0 };
-	snprintf(bombs_str, sizeof(bombs_str) - 1, "%.3d", MAX(game->num_bombs - flags, 0));
+	char bombs_str[11] = { 0 };
+	snprintf(bombs_str, sizeof(bombs_str), "%.3d", MAX(game->num_bombs - flags, 0));
 	gtk_label_set_text(bombs_label, bombs_str);
 }
 
@@ -149,7 +149,7 @@ void click_cell(GtkWidget* widget, coordinate* coord)
 
 	// Apply correct image style
 	int val = game->board[coord->y][coord->x];
-	char style_string[5] = { 0 };
+	char style_string[11] = { 0 };
 	switch(val)
 	{
 		// If this cell has no bomb neighbors, we also expose all its neighbors
@@ -176,7 +176,7 @@ void click_cell(GtkWidget* widget, coordinate* coord)
 
 		// If this cell has a normal value, just expose it
 		default:
-			snprintf(style_string, sizeof(style_string) - 1, "n%d", val);
+			snprintf(style_string, sizeof(style_string), "n%d", val);
 			gtk_style_context_add_class(context, style_string);
 			break;
 	}
